@@ -114,7 +114,8 @@ class CEM():
             for t in range(self.T):
                 u = samples[:, self._slice_control(t)]
                 un = torch.norm(u, dim=1)
-                samples[:, self._slice_control(t)] = u / un.view(-1, 1) * self.umax
+                violated = un > self.umax
+                samples[violated, self._slice_control(t)] = u[violated] / un[violated].view(-1, 1) * self.umax
         return samples
 
     def _slice_control(self, t):
