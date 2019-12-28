@@ -6,7 +6,7 @@ from torch.distributions.multivariate_normal import MultivariateNormal
 logger = logging.getLogger(__name__)
 
 
-def cov(x, rowvar=False, bias=False, ddof=None, aweights=None):
+def pytorch_cov(x, rowvar=False, bias=False, ddof=None, aweights=None):
     """Estimates covariance matrix like numpy.cov"""
     # ensure at least 2D
     if x.dim() == 1:
@@ -100,6 +100,9 @@ class CEM():
         self.umax = ctrl_max_mag
         self.action_distribution = None
 
+        # regularize covariance
+        self.cov_reg = torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * 1e-5
+
     def reset_distribution(self):
         # action distribution, initialized as N(0,I)
         # we do Hp x 1 instead of H x p because covariance will be Hp x Hp matrix instead of some higher dim tensor
@@ -111,7 +114,7 @@ class CEM():
             for t in range(self.T):
                 u = samples[:, self._slice_control(t)]
                 un = torch.norm(u, dim=1)
-                samples[:, self._slice_control(t)] = u / un * self.umax
+                samples[:, self._slice_control(t)] = u / un.view(-1, 1) * self.umax
         return samples
 
     def _slice_control(self, t):
@@ -131,15 +134,10 @@ class CEM():
     def _sample_top_trajectories(self, state, num_elite):
         # sample K action trajectories
         # in case it's singular
-        try:
-            self.action_distribution = MultivariateNormal(self.mean, covariance_matrix=self.cov)
-        except RuntimeError:
-            self.cov += torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * 1e-5
-            self.action_distribution = MultivariateNormal(self.mean, covariance_matrix=self.cov)
-            logger.warning("CEM action sequence covariance is singular")
+        self.action_distribution = MultivariateNormal(self.mean, covariance_matrix=self.cov)
         samples = self.action_distribution.sample((self.K,))
-        # TODO bound to control maximums
-        # samples = self._bound_samples(samples)
+        # bound to control maximums
+        samples = self._bound_samples(samples)
 
         cost_total = self._evaluate_trajectories(samples, state)
         # select top k based on score
@@ -158,7 +156,9 @@ class CEM():
             top_samples = self._sample_top_trajectories(state, self.num_elite)
             # fit the gaussian to those samples
             self.mean = torch.mean(top_samples, dim=0)
-            self.cov = cov(top_samples, rowvar=False)
+            self.cov = pytorch_cov(top_samples, rowvar=False)
+            if torch.matrix_rank(self.cov) < self.cov.shape[0]:
+                self.cov += self.cov_reg
 
         if choose_best:
             top_sample = self._sample_top_trajectories(state, 1)
