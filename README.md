@@ -16,4 +16,4 @@ the pendulum dynamics.
 
 # Features
 - Parallel/batch pytorch implementation for accelerated sampling
-
+- constrain action magnitude
