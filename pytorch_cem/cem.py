@@ -172,13 +172,13 @@ class CEM():
         return u
 
 
-def run_cem(cem, env, retrain_dynamics, retrain_after_iter=50, iter=1000, render=True):
+def run_cem(cem, env, retrain_dynamics, retrain_after_iter=50, iter=1000, render=True, choose_best=False):
     dataset = torch.zeros((retrain_after_iter, cem.nx + cem.nu), dtype=cem.dtype, device=cem.d)
     total_reward = 0
     for i in range(iter):
         state = env.state.copy()
         command_start = time.perf_counter()
-        action = cem.command(state)
+        action = cem.command(state, choose_best=choose_best)
         elapsed = time.perf_counter() - command_start
         s, r, _, _ = env.step(action.numpy())
         total_reward += r
