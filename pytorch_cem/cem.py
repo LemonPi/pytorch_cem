@@ -62,22 +62,18 @@ class CEM():
     def __init__(self, dynamics, running_cost, nx, nu, num_samples=100, num_iterations=3, num_elite=10, horizon=15,
                  device="cpu",
                  terminal_state_cost=None,
-                 ctrl_max_mag=None,
+                 u_min=None,
+                 u_max=None,
                  init_cov_diag=1):
         """
 
         :param dynamics: function(state, action) -> next_state (K x nx) taking in batch state (K x nx) and action (K x nu)
         :param running_cost: function(state, action) -> cost (K x 1) taking in batch state and action (same as dynamics)
         :param nx: state dimension
-        :param noise_sigma: control noise covariance (assume v_t ~ N(u_t, noise_sigma))
         :param num_samples: K, number of trajectories to sample
         :param horizon: T, length of each trajectory
         :param device: pytorch device
         :param terminal_state_cost: function(state) -> cost (K x 1) taking in batch state
-        :param lambda_: temperature, positive scalar where larger values will allow more exploration
-        :param noise_mu: control noise mean (used to bias control samples); defaults to zero mean
-        :param u_init: what to initialize new end of trajectory control to be; defeaults to zero
-        :param U_init: initial control sequence; defaults to noise
         """
         self.d = device
         self.dtype = torch.double  # TODO determine dtype
@@ -97,7 +93,13 @@ class CEM():
         self.running_cost = running_cost
         self.terminal_state_cost = terminal_state_cost
         self.init_cov_diag = init_cov_diag
-        self.umax = ctrl_max_mag
+        self.u_min = u_min
+        self.u_max = u_max
+        # make sure if any of them is specified, both are specified
+        if self.u_max is not None and self.u_min is None:
+            self.u_min = -self.u_max
+        if self.u_min is not None and self.u_max is None:
+            self.u_max = -self.u_min
         self.action_distribution = None
 
         # regularize covariance
@@ -110,12 +112,12 @@ class CEM():
         self.cov = torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * self.init_cov_diag
 
     def _bound_samples(self, samples):
-        if self.umax is not None:
+        if self.u_max is not None:
             for t in range(self.T):
                 u = samples[:, self._slice_control(t)]
-                un = torch.norm(u, dim=1)
-                violated = un > self.umax
-                samples[violated, self._slice_control(t)] = u[violated] / un[violated].view(-1, 1) * self.umax
+                # TODO handle clamping for multi-dimensional control
+                cu = torch.clamp(u, self.u_min, self.u_max)
+                samples[:, self._slice_control(t)] = cu
         return samples
 
     def _slice_control(self, t):

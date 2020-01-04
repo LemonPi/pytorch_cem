@@ -191,6 +191,6 @@ if __name__ == "__main__":
         env.env.state = [np.pi, 1]
 
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
-                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, ctrl_max_mag=ACTION_HIGH)
+                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, u_max=ACTION_HIGH)
     total_reward, data = cem.run_cem(cem_gym, env, train, iter=2000, choose_best=True)
     logger.info("Total reward %f", total_reward)
