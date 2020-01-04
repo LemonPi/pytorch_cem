@@ -14,8 +14,8 @@ logging.basicConfig(level=logging.INFO,
 
 if __name__ == "__main__":
     ENV_NAME = "Pendulum-v0"
-    TIMESTEPS = 10  # T
-    N_ELITES = 15
+    TIMESTEPS = 15  # T
+    N_ELITES = 10
     N_SAMPLES = 100  # K
     SAMPLE_ITER = 3  # M
     ACTION_LOW = -2.0
@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     import random
 
-    randseed = 6
+    randseed = 7
     if randseed is None:
         randseed = random.randint(0, 1000000)
     random.seed(randseed)
@@ -191,6 +191,6 @@ if __name__ == "__main__":
         env.env.state = [np.pi, 1]
 
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
-                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, u_max=ACTION_HIGH)
-    total_reward, data = cem.run_cem(cem_gym, env, train, iter=2000, choose_best=True)
+                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, u_max=ACTION_HIGH, init_cov_diag=10)
+    total_reward, data = cem.run_cem(cem_gym, env, train, iter=2000, choose_best=False)
     logger.info("Total reward %f", total_reward)
