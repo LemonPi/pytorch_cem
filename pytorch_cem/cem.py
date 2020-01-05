@@ -115,8 +115,7 @@ class CEM():
         if self.u_max is not None:
             for t in range(self.T):
                 u = samples[:, self._slice_control(t)]
-                # TODO handle clamping for multi-dimensional control
-                cu = torch.clamp(u, self.u_min, self.u_max)
+                cu = torch.max(torch.min(u, self.u_max), self.u_min)
                 samples[:, self._slice_control(t)] = cu
         return samples
 
