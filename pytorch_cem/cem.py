@@ -64,6 +64,7 @@ class CEM():
                  terminal_state_cost=None,
                  u_min=None,
                  u_max=None,
+                 choose_best=False,
                  init_cov_diag=1):
         """
 
@@ -81,6 +82,7 @@ class CEM():
         self.T = horizon  # TIMESTEPS
         self.M = num_iterations
         self.num_elite = num_elite
+        self.choose_best = choose_best
 
         # dimensions of state and control
         self.nx = nx
@@ -162,7 +164,7 @@ class CEM():
             if torch.matrix_rank(self.cov) < self.cov.shape[0]:
                 self.cov += self.cov_reg
 
-        if choose_best:
+        if choose_best and self.choose_best:
             top_sample = self._sample_top_trajectories(state, 1)
         else:
             top_sample = self.action_distribution.sample((1,))
