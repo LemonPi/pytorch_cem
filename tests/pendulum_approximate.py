@@ -191,6 +191,7 @@ if __name__ == "__main__":
         env.env.state = [np.pi, 1]
 
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
-                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, u_max=ACTION_HIGH, init_cov_diag=10)
+                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES,
+                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double), init_cov_diag=10)
     total_reward, data = cem.run_cem(cem_gym, env, train, iter=2000, choose_best=False)
     logger.info("Total reward %f", total_reward)

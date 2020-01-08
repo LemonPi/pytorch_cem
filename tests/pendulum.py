@@ -76,6 +76,7 @@ if __name__ == "__main__":
     nx = 2
     nu = 1
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
-                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES, u_max=ACTION_HIGH)
+                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES,
+                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double))
     total_reward, data = cem.run_cem(cem_gym, env, train)
     logger.info("Total reward %f", total_reward)
