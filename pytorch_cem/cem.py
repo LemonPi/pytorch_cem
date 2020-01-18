@@ -183,7 +183,7 @@ def run_cem(cem, env, retrain_dynamics, retrain_after_iter=50, iter=1000, render
         command_start = time.perf_counter()
         action = cem.command(state, choose_best=choose_best)
         elapsed = time.perf_counter() - command_start
-        s, r, _, _ = env.step(action.numpy())
+        s, r, _, _ = env.step(action.cpu().numpy())
         total_reward += r
         logger.debug("action taken: %.4f cost received: %.4f time taken: %.5fs", action, -r, elapsed)
         if render:

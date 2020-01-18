@@ -21,7 +21,7 @@ if __name__ == "__main__":
     ACTION_LOW = -2.0
     ACTION_HIGH = 2.0
 
-    d = "cpu"
+    d = "cuda:0"
     dtype = torch.double
 
 
@@ -38,7 +38,7 @@ if __name__ == "__main__":
         u = perturbed_action
         u = torch.clamp(u, -2, 2)
 
-        newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
+        newthdot = thdot + (-3 * g / (2 * l) * torch.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
         newth = th + newthdot * dt
         newthdot = torch.clamp(newthdot, -8, 8)
 
@@ -77,6 +77,6 @@ if __name__ == "__main__":
     nu = 1
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
                       horizon=TIMESTEPS, device=d, num_elite=N_ELITES,
-                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double))
+                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double, device=d))
     total_reward, data = cem.run_cem(cem_gym, env, train)
     logger.info("Total reward %f", total_reward)

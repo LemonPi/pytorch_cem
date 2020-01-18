@@ -21,7 +21,7 @@ if __name__ == "__main__":
     ACTION_LOW = -2.0
     ACTION_HIGH = 2.0
 
-    d = "cpu"
+    d = "cuda:0"
     dtype = torch.double
 
     import random
@@ -48,7 +48,7 @@ if __name__ == "__main__":
         torch.nn.Linear(H_UNITS, H_UNITS),
         torch.nn.Tanh(),
         torch.nn.Linear(H_UNITS, nx)
-    ).double()
+    ).double().to(device=d)
 
 
     def dynamics(state, perturbed_action):
@@ -78,7 +78,7 @@ if __name__ == "__main__":
         u = perturbed_action
         u = torch.clamp(u, -2, 2)
 
-        newthdot = thdot + (-3 * g / (2 * l) * np.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
+        newthdot = thdot + (-3 * g / (2 * l) * torch.sin(th + np.pi) + 3. / (m * l ** 2) * u) * dt
         newth = th + newthdot * dt
         newthdot = torch.clamp(newthdot, -8, 8)
 
@@ -109,9 +109,9 @@ if __name__ == "__main__":
     dataset = None
     # create some true dynamics validation set to compare model against
     Nv = 1000
-    statev = torch.cat(((torch.rand(Nv, 1, dtype=torch.double) - 0.5) * 2 * math.pi,
-                        (torch.rand(Nv, 1, dtype=torch.double) - 0.5) * 16), dim=1)
-    actionv = (torch.rand(Nv, 1, dtype=torch.double) - 0.5) * (ACTION_HIGH - ACTION_LOW)
+    statev = torch.cat(((torch.rand(Nv, 1, dtype=torch.double, device=d) - 0.5) * 2 * math.pi,
+                        (torch.rand(Nv, 1, dtype=torch.double, device=d) - 0.5) * 16), dim=1)
+    actionv = (torch.rand(Nv, 1, dtype=torch.double, device=d) - 0.5) * (ACTION_HIGH - ACTION_LOW)
 
 
     def train(new_data):
@@ -122,6 +122,7 @@ if __name__ == "__main__":
             new_data = torch.from_numpy(new_data)
         # clamp actions
         new_data[:, -1] = torch.clamp(new_data[:, -1], ACTION_LOW, ACTION_HIGH)
+        new_data = new_data.to(device=d)
         # append data to whole dataset
         if dataset is None:
             dataset = new_data
@@ -192,6 +193,6 @@ if __name__ == "__main__":
 
     cem_gym = cem.CEM(dynamics, running_cost, nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
                       horizon=TIMESTEPS, device=d, num_elite=N_ELITES,
-                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double), init_cov_diag=10)
+                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double, device=d), init_cov_diag=10)
     total_reward, data = cem.run_cem(cem_gym, env, train, iter=2000, choose_best=False)
     logger.info("Total reward %f", total_reward)
