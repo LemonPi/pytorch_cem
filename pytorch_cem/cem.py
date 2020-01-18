@@ -105,7 +105,7 @@ class CEM():
         self.action_distribution = None
 
         # regularize covariance
-        self.cov_reg = torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * 1e-5
+        self.cov_reg = torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * init_cov_diag * 1e-5
 
     def reset_distribution(self):
         # action distribution, initialized as N(0,I)
