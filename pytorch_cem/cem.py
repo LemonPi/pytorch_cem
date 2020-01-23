@@ -102,6 +102,8 @@ class CEM():
             self.u_min = -self.u_max
         if self.u_min is not None and self.u_max is None:
             self.u_max = -self.u_min
+        self.u_min = self.u_min.to(device=self.d)
+        self.u_max = self.u_max.to(device=self.d)
         self.action_distribution = None
 
         # regularize covariance
