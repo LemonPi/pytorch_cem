@@ -21,7 +21,7 @@ if __name__ == "__main__":
     ACTION_LOW = -2.0
     ACTION_HIGH = 2.0
 
-    d = "cuda:0"
+    d = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     dtype = torch.double
 
 
