@@ -5,7 +5,21 @@ in pytorch.
 # Usage
 Clone repository somewhere, then `pip3 install -e .` to install in editable mode.
 See `tests/pendulum_approximate.py` for usage with a neural network approximating
-the pendulum dynamics.
+the pendulum dynamics. Basic use case is shown below
+
+```python
+from pytorch_cem import cem
+# create controller with chosen parameters
+ctrl = cem.CEM(dynamics, running_cost,  nx, nu, num_samples=N_SAMPLES, num_iterations=SAMPLE_ITER,
+                      horizon=TIMESTEPS, device=d, num_elite=N_ELITES,
+                      u_max=torch.tensor(ACTION_HIGH, dtype=torch.double, device=d), init_cov_diag=1)
+
+# assuming you have a gym-like env
+obs = env.reset()
+for i in range(100):
+    action = ctrl.command(obs)
+    obs, reward, done, _ = env.step(action.cpu().numpy())
+```
 
 # Requirements
 - pytorch (>= 1.0)
