@@ -16,4 +16,8 @@ the pendulum dynamics.
 
 # Features
 - Parallel/batch pytorch implementation for accelerated sampling
-- constrain action magnitude
+- Control bounds
+
+# Related projects
+- [pytorch MPPI](https://github.com/LemonPi/pytorch_mppi) - an alternative MPC method with similar API as this project
+(faster and works better in general than CEM)
