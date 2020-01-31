@@ -55,7 +55,8 @@ def pytorch_cov(x, rowvar=False, bias=False, ddof=None, aweights=None):
 
 
 class CEM():
-    """ Cross Entropy Method control
+    """
+    Cross Entropy Method control
     This implementation batch samples the trajectories and so scales well with the number of samples K.
     """
 
@@ -110,7 +111,10 @@ class CEM():
         # regularize covariance
         self.cov_reg = torch.eye(self.T * self.nu, device=self.d, dtype=self.dtype) * init_cov_diag * 1e-5
 
-    def reset_distribution(self):
+    def reset(self):
+        """
+        Clear controller state after finishing a trial
+        """
         # action distribution, initialized as N(0,I)
         # we do Hp x 1 instead of H x p because covariance will be Hp x Hp matrix instead of some higher dim tensor
         self.mean = torch.zeros(self.T * self.nu, device=self.d, dtype=self.dtype)
@@ -157,7 +161,7 @@ class CEM():
             state = torch.tensor(state)
         state = state.to(dtype=self.dtype, device=self.d)
 
-        self.reset_distribution()
+        self.reset()
 
         for m in range(self.M):
             top_samples = self._sample_top_trajectories(state, self.num_elite)
