@@ -11,5 +11,9 @@ setup(
     description='Cross Entropy Method (CEM) implemented in pytorch',
     install_requires=[
         'torch',
+        'numpy'
+    ],
+    tests_requires=[
+        'gym'
     ]
 )

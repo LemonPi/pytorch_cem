@@ -32,6 +32,18 @@ for i in range(100):
 - Parallel/batch pytorch implementation for accelerated sampling
 - Control bounds
 
+# Tests
+You'll need to install `gym` to run the tests (for the pendulum environment).
+
+Under `tests` you can find the `CEM` method applied to known pendulum dynamics
+and approximate pendulum dynamics (with a 2 layer feedforward net 
+estimating the state residual). Using a continuous angle representation
+(feeding `cos(\theta), sin(\theta)` instead of `\theta` directly) makes
+a huge difference. Although both works, the continuous representation
+is much more robust to controller parameters and random seed. In addition,
+the problem of continuing to spin after over-swinging does not appear.
+
+
 # Related projects
 - [pytorch MPPI](https://github.com/LemonPi/pytorch_mppi) - an alternative MPC method with similar API as this project
 (faster and works better in general than CEM)
