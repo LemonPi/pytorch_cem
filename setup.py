@@ -14,6 +14,7 @@ setup(
         'numpy'
     ],
     tests_requires=[
-        'gym'
+        'gym<=0.20',
+        'pygame'
     ]
 )
